@@ -1,0 +1,45 @@
+{
+  "name": "ecommerce-api",
+  "version": "1.2.0",
+  "description": " Ecommerce api",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "dev": "nodemon src/index.ts",
+    "build": "tsc",
+    "lint": "eslint --fix src test",
+    "test": "jest",
+    "vercel-build": "echo hello"
+  },
+  "keywords": [],
+  "author": "Seweryn",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/w3cj/express-api-starter.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "helmet": "^6.1.5",
+    "mongodb": "^5.3.0",
+    "morgan": "^1.10.0",
+    "zod": "^3.21.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/morgan": "^1.9.4",
+    "@types/node": "^18.16.3",
+    "@typescript-eslint/eslint-plugin": "^5.59.1",
+    "@typescript-eslint/parser": "^5.59.1",
+    "eslint": "^8.39.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-import-resolver-typescript": "^3.5.5",
+    "eslint-plugin-import": "^2.27.5",
+    "nodemon": "^2.0.22",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  }
+}
