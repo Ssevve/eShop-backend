@@ -19,7 +19,6 @@ async function createReview(req: Request<{}, {}, { rating: number, message: stri
   const session = client.startSession();
   const { rating, message, productId } = req.body;
   try {
-    //@ts-ignore
     const duplicateReview = await Reviews.findOne({ userId: req.user._id, productId });
     if (duplicateReview) return res.status(409).json({ message: 'Duplicate review' });
 
@@ -27,7 +26,6 @@ async function createReview(req: Request<{}, {}, { rating: number, message: stri
     if (!product) res.status(404).json({ message: 'Product with the given ID not found.' });
 
     await session.withTransaction(async () => {
-      //@ts-ignore
       await ReviewsService.insertReview({ rating, message, productId, userFirstName: req.user?.firstName, userId: req.user?._id }, session);
       await ProductsService.updateRating({ productId, rating, isNew: true, session });
     });
