@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import * as ReviewsController from './reviews.controller';
+import ensureAuth from '../../middleware/ensureAuth';
 
 const router = Router();
 
 router.get('/:productId', ReviewsController.getReviewsByProductId);
-router.put('/', ReviewsController.editReview);
-router.post('/', ReviewsController.createReview);
+router.put('/', ensureAuth, ReviewsController.editReview);
+router.post('/', ensureAuth, ReviewsController.createReview);
 
 export default router;
