@@ -3,6 +3,7 @@ import { db } from '../../db';
 
 const Review = z.object({
   productId: z.string(),
+  userFirstName: z.string(),
   userId: z.string(),
   message: z.string(),
   rating: z.number(),

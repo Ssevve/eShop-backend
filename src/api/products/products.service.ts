@@ -52,18 +52,19 @@ const findAllProducts = async ({ sort, order, skip, limit }: QueryArguments) => 
   
 };
 
-type UpdateRatingByIdArgs = {
+type UpdateRatingArgs = {
   productId: string;
   rating: number;
   session: ClientSession;
 } & ({
+  oldRating?: never;
   isNew: true,
 } | {
   isNew?: never;
   oldRating: number;
 });
 
-const updateRatingById = async ({ productId, rating, session, ...args }: UpdateRatingByIdArgs) => {
+const updateRating = async ({ productId, rating, session, ...args }: UpdateRatingArgs) => {
   const product = await findProductById(productId);
   if (!product) throw Error('Product not found');
 
@@ -77,4 +78,4 @@ const updateRatingById = async ({ productId, rating, session, ...args }: UpdateR
   return result;
 };
 
-export { findProductById, findDiscountedProducts, findProductsByCategory, findAllProducts, updateRatingById };
+export { findProductById, findDiscountedProducts, findProductsByCategory, findAllProducts, updateRating };
