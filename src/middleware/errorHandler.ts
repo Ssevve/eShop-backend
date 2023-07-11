@@ -1,5 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
-import ErrorResponse from '../interfaces/ErrorResponse';
+import MessageResponse from '../types/MessageResponse';
+
+interface ErrorResponse extends MessageResponse {
+  stack?: string;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function errorHandler(err: Error, req: Request, res: Response<ErrorResponse>, next: NextFunction) {

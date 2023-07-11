@@ -8,14 +8,14 @@ const insertReview = async ({ rating, message, productId, userId, userFirstName 
 };
 
 interface UpdateReviewByIdArgs {
-  reviewId: string;
+  id: string;
   rating: number;
-  message: string;
+  message?: string;
   session: ClientSession;
 }
 
-const updateReview = async ({ reviewId, rating, message, session }: UpdateReviewByIdArgs) => {
-  const result = await Reviews.updateOne({ _id: new ObjectId(reviewId) }, { $set: { rating, message } }, { session });
+const updateReview = async ({ id, rating, message, session }: UpdateReviewByIdArgs) => {
+  const result = await Reviews.updateOne({ _id: new ObjectId(id) }, { $set: { rating: rating, message } }, { session });
   return result;
 };
 

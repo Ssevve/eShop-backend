@@ -3,7 +3,7 @@ import * as UsersService from './users.service';
 import { User } from './users.model';
 import { WithId } from 'mongodb';
 import admin from '../../firebaseConfig';
-import MessageResponse from '../../interfaces/MessageResponse';
+import MessageResponse from '../../types/MessageResponse';
 
 interface GetUserByFirebaseIdParams {
   firebaseId: string;

@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import MessageResponse from '../interfaces/MessageResponse';
+import MessageResponse from '../types/MessageResponse';
 import productsRoute from './products/products.routes';
 import reviewsRoute from './reviews/reviews.routes';
 import usersRoute from './users/users.routes';

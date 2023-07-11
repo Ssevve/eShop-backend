@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import * as ReviewsService from './reviews.service';
 import { Review, Reviews } from './reviews.model';
-import MessageResponse from '../../interfaces/MessageResponse';
+import MessageResponse from '../../types/MessageResponse';
 import * as ProductsService from '../products/products.service';
 import { client } from '../../db';
 import { ObjectId } from 'mongodb';
@@ -15,9 +15,24 @@ async function getReviewsByProductId(req: Request<{ productId: string; }, {}, {}
   }
 }
 
-async function createReview(req: Request<{}, {}, { rating: number, message: string, productId: string }, {}>, res: Response<MessageResponse>, next: NextFunction) {
+interface CreateReviewReqBody {
+  rating: number | string;
+  message: string;
+  productId: string
+}
+
+type CreateReviewResBody = Review & { _id: string } | MessageResponse;
+
+async function createReview(req: Request<{}, {}, CreateReviewReqBody, {}>, res: Response<CreateReviewResBody>, next: NextFunction) {
+  const { message, productId } = req.body;
+  if (!productId) return res.status(400).json({ message: 'Product id missing.' });
+
+  const rating = Number(req.body.rating);
+  if (!rating) return res.status(400).json({ message: 'Rating is required.' });
+  // TODO: extract values
+  if (rating < 1 || rating > 5) return res.status(400).json({ message: 'Rating must be between 1 and 5.' });
+
   const session = client.startSession();
-  const { rating, message, productId } = req.body;
   try {
     const duplicateReview = await Reviews.findOne({ userId: req.user._id, productId });
     if (duplicateReview) return res.status(409).json({ message: 'Duplicate review' });
@@ -29,7 +44,11 @@ async function createReview(req: Request<{}, {}, { rating: number, message: stri
       await ReviewsService.insertReview({ rating, message, productId, userFirstName: req.user?.firstName, userId: req.user?._id }, session);
       await ProductsService.updateRating({ productId, rating, isNew: true, session });
     });
-    return res.sendStatus(201);
+
+    const createdReview = await Reviews.findOne({ userId: req.user._id, productId });
+    if (createdReview) return res.status(201).json(createdReview);
+    else throw new Error('Could not find created review.');
+    
   } catch (error) {
     next(error);
   } finally {
@@ -37,23 +56,37 @@ async function createReview(req: Request<{}, {}, { rating: number, message: stri
   }
 }
 
-interface EditReviewByIdReqBody extends Review {
+interface EditReviewByIdReqBody {
   _id: string;
+  rating: number;
+  message?: string;
 }
 
-async function editReview(req: Request<{}, {}, EditReviewByIdReqBody, {}>, res: Response<MessageResponse>, next: NextFunction) {
-  const oldReview = await Reviews.findOne({ _id: new ObjectId(req.body._id) });
-  if (!oldReview) return res.status(404).json({ message: 'Review with the given ID not found.' });
+type EditReviewByIdResBody = Review | MessageResponse;
 
-  const { _id: id, rating, message } = req.body;
+async function editReview(req: Request<{}, {}, EditReviewByIdReqBody, {}>, res: Response<EditReviewByIdResBody>, next: NextFunction) {
+  const { _id: id, message } = req.body;
+  if (!id) return res.status(400).json({ message: 'Review id missing.' });
+
+  const rating = Number(req.body.rating);
+  if (!rating) return res.status(400).json({ message: 'Rating is required.' });
+  // TODO: extract values
+  if (rating < 1 || rating > 5) return res.status(400).json({ message: 'Rating must be between 1 and 5.' });
 
   const session = client.startSession();
   try {
+    const oldReview = await Reviews.findOne({ _id: new ObjectId(id) });
+    if (!oldReview) return res.status(404).json({ message: 'Review with the given ID not found.' });
+
     await session.withTransaction(async () => {
-      await ReviewsService.updateReview({ reviewId: id, rating, message, session });
-      await ProductsService.updateRating({ productId: req.body.productId, rating, oldRating: oldReview.rating, session });      
-      return res.sendStatus(200);
+      await ReviewsService.updateReview({ id, rating, message, session });
+      await ProductsService.updateRating({ productId: oldReview.productId, rating, oldRating: oldReview.rating, session });      
     });
+
+    const updatedReview = await Reviews.findOne({ _id: new ObjectId(id) });
+    if (updatedReview) return res.status(200).json(updatedReview);
+    else throw new Error('Could not find updated review.');
+
   } catch (error) {
     next(error);
   } finally {
