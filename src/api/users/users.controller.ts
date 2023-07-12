@@ -19,8 +19,15 @@ async function getUserByFirebaseId(req: Request<GetUserByFirebaseIdParams, {}, {
   }
 }
 
-async function registerUser(req: Request<{}, {}, User & { password: string }, {}>, res: Response<WithId<User> | MessageResponse>, next: NextFunction) {
+interface RegisterUserReqBody extends User {
+  password: string;
+}
+
+type RegisterUserResBody = WithId<User> | MessageResponse;
+
+async function registerUser(req: Request<{}, {}, RegisterUserReqBody, {}>, res: Response<RegisterUserResBody>, next: NextFunction) {
   const { email, password, firstName, lastName } = req.body;
+
   try {
     const newFirebaseUser = await admin.auth.createUser({
       email,

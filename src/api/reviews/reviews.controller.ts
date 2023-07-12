@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
+import { ObjectId, WithId } from 'mongodb';
 import * as ReviewsService from './reviews.service';
 import { Review, Reviews } from './reviews.model';
 import MessageResponse from '../../types/MessageResponse';
 import * as ProductsService from '../products/products.service';
 import { client } from '../../db';
-import { ObjectId } from 'mongodb';
+import { Product } from '../products/products.model';
 
 async function getReviewsByProductId(req: Request<{ productId: string; }, {}, {}, {}>, res: Response<Review[]>, next: NextFunction) {
   try {
@@ -28,11 +29,8 @@ async function createReview(req: Request<{}, {}, CreateReviewReqBody, {}>, res: 
   if (!productId) return res.status(400).json({ message: 'Product id missing.' });
 
   const rating = Number(req.body.rating);
-  if (!rating) return res.status(400).json({ message: 'Rating is required.' });
-  // TODO: extract values
-  if (rating < 1 || rating > 5) return res.status(400).json({ message: 'Rating must be between 1 and 5.' });
 
-  const session = client.startSession();
+  const session = client.startSession({ causalConsistency: true });
   try {
     const duplicateReview = await Reviews.findOne({ userId: req.user._id, productId });
     if (duplicateReview) return res.status(409).json({ message: 'Duplicate review' });
@@ -56,22 +54,19 @@ async function createReview(req: Request<{}, {}, CreateReviewReqBody, {}>, res: 
   }
 }
 
-interface EditReviewByIdReqBody {
+interface EditReviewReqBody {
   _id: string;
   rating: number;
   message?: string;
 }
 
-type EditReviewByIdResBody = Review | MessageResponse;
+type EditReviewResBody = {
+  review: WithId<Review>;
+  product: Product;
+} | MessageResponse;
 
-async function editReview(req: Request<{}, {}, EditReviewByIdReqBody, {}>, res: Response<EditReviewByIdResBody>, next: NextFunction) {
-  const { _id: id, message } = req.body;
-  if (!id) return res.status(400).json({ message: 'Review id missing.' });
-
-  const rating = Number(req.body.rating);
-  if (!rating) return res.status(400).json({ message: 'Rating is required.' });
-  // TODO: extract values
-  if (rating < 1 || rating > 5) return res.status(400).json({ message: 'Rating must be between 1 and 5.' });
+async function editReview(req: Request<{}, {}, EditReviewReqBody, {}>, res: Response<EditReviewResBody>, next: NextFunction) {
+  const { _id: id, message, rating } = req.body;
 
   const session = client.startSession();
   try {

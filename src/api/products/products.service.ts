@@ -1,5 +1,6 @@
 import { ClientSession, ObjectId, SortDirection } from 'mongodb';
 import { Products } from './products.model';
+import { Reviews } from '../reviews/reviews.model';
 
 interface QueryArguments {
   sort: string;
@@ -52,34 +53,24 @@ const findAllProducts = async ({ sort, order, skip, limit }: QueryArguments) => 
   
 };
 
-interface NewReviewArgs {
-  isNew: true;
-  oldRating?: never;
-}
-
-interface OldReviewArgs {
-  isNew?: never;
-  oldRating: number;
-}
-
-type UpdateRatingArgs = {
+interface UpdateRatingArgs {
   productId: string;
-  rating: number;
   session: ClientSession;
-} & (NewReviewArgs | OldReviewArgs);
+}
 
-const updateRating = async ({ productId, rating, session, isNew, oldRating }: UpdateRatingArgs) => {
+const updateRating = async ({ productId, session }: UpdateRatingArgs) => {
   const product = await findProductById(productId);
   if (!product) throw Error('Product not found');
 
-  const newRatingsCount = isNew ? (product.ratingsCount) + 1 : product.ratingsCount;
-  const newRating = isNew
-    ? (product.rating * product.ratingsCount + rating) / newRatingsCount
-    : ((product.rating * product.ratingsCount - oldRating) + rating) / product.ratingsCount;
-    
-  const formattedRating = parseFloat(newRating.toFixed(1));
-  const result = await Products.updateOne({ _id: new ObjectId(productId) }, { $set: { rating: formattedRating, ratingsCount: newRatingsCount } }, { session });
-  return result;
+  const reviews = await Reviews.find({ productId }).toArray();
+  const ratingsCount = reviews.length;
+  const rating = parseFloat(reviews.reduce((total, curr) => total + curr.rating, 0).toFixed(1)) / ratingsCount || 0;
+  
+  console.log(rating);
+
+  await Products.updateOne({ _id: new ObjectId(productId) }, { $set: { rating, ratingsCount } }, { session });
+  const updatedProduct = await findProductById(productId);
+  return updatedProduct;
 };
 
 export { findProductById, findDiscountedProducts, findProductsByCategory, findAllProducts, updateRating };
