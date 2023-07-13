@@ -1,7 +1,8 @@
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      MONGODB_URI: string;
+      MONGODB_PROD_URI: string;
+      MONGODB_DEV_URI: string;
       NODE_ENV: 'production' | 'development';
       FIREBASE_PROJECT_ID: string;
       FIREBASE_PRIVATE_KEY_ID: string;
