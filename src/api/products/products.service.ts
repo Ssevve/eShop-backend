@@ -10,8 +10,8 @@ interface QueryArguments {
   category?: string;
 }
 
-const findProductById = async (id: string) => {
-  const product = await Products.findOne(new ObjectId(id));
+const findProductById = async (id: string, session?: ClientSession) => {
+  const product = await Products.findOne(new ObjectId(id), { session });
   return product;
 };
 
@@ -59,17 +59,15 @@ interface UpdateRatingArgs {
 }
 
 const updateRating = async ({ productId, session }: UpdateRatingArgs) => {
-  const product = await findProductById(productId);
-  if (!product) throw Error('Product not found');
+  const product = await findProductById(productId, session);
+  if (!product) throw Error('Product with the given ID not found.');
 
-  const reviews = await Reviews.find({ productId }).toArray();
+  const reviews = await Reviews.find({ productId }, { session }).toArray();
   const ratingsCount = reviews.length;
-  const rating = parseFloat(reviews.reduce((total, curr) => total + curr.rating, 0).toFixed(1)) / ratingsCount || 0;
+  const rating = parseFloat((reviews.reduce((acc, curr) => acc + curr.rating, 0) / ratingsCount).toFixed(1)) || 0;
   
-  console.log(rating);
-
   await Products.updateOne({ _id: new ObjectId(productId) }, { $set: { rating, ratingsCount } }, { session });
-  const updatedProduct = await findProductById(productId);
+  const updatedProduct = await findProductById(productId, session);
   return updatedProduct;
 };
 

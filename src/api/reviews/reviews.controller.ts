@@ -17,36 +17,40 @@ async function getReviewsByProductId(req: Request<{ productId: string; }, {}, {}
 }
 
 interface CreateReviewReqBody {
-  rating: number | string;
+  rating: number;
   message: string;
   productId: string
 }
 
-type CreateReviewResBody = Review & { _id: string } | MessageResponse;
+type CreateReviewResBody = {
+  created: {
+    review: WithId<Review>;
+  },
+  updated: {
+    product: Product;
+  }
+} | MessageResponse;
 
 async function createReview(req: Request<{}, {}, CreateReviewReqBody, {}>, res: Response<CreateReviewResBody>, next: NextFunction) {
-  const { message, productId } = req.body;
-  if (!productId) return res.status(400).json({ message: 'Product id missing.' });
+  const { message, productId, rating } = req.body;
 
-  const rating = Number(req.body.rating);
-
-  const session = client.startSession({ causalConsistency: true });
+  const duplicateReview = await Reviews.findOne({ userId: req.user._id, productId });
+  if (duplicateReview) return res.status(409).json({ message: 'Duplicate review.' });
+  
+  const product = await ProductsService.findProductById(productId);
+  if (!product) res.status(404).json({ message: 'Product with the given ID not found.' });
+  
+  const session = client.startSession();
   try {
-    const duplicateReview = await Reviews.findOne({ userId: req.user._id, productId });
-    if (duplicateReview) return res.status(409).json({ message: 'Duplicate review' });
-
-    const product = await ProductsService.findProductById(productId);
-    if (!product) res.status(404).json({ message: 'Product with the given ID not found.' });
-
     await session.withTransaction(async () => {
-      await ReviewsService.insertReview({ rating, message, productId, userFirstName: req.user?.firstName, userId: req.user?._id }, session);
-      await ProductsService.updateRating({ productId, rating, isNew: true, session });
+      const insertedReview = await ReviewsService.insertReview({ rating, message, productId, userFirstName: req.user.firstName, userId: req.user._id, session });
+      const updatedProduct = await ProductsService.updateRating({ productId, session });
+      if (insertedReview && updatedProduct) {
+        return res.status(201).json({ created: { review: insertedReview }, updated: { product: updatedProduct } });
+      } else {
+        throw new Error('Transaction aborted. Review was not created.');
+      }
     });
-
-    const createdReview = await Reviews.findOne({ userId: req.user._id, productId });
-    if (createdReview) return res.status(201).json(createdReview);
-    else throw new Error('Could not find created review.');
-    
   } catch (error) {
     next(error);
   } finally {
@@ -54,34 +58,44 @@ async function createReview(req: Request<{}, {}, CreateReviewReqBody, {}>, res: 
   }
 }
 
+type EditReviewReqParams = {
+  reviewId: string;
+  productId: string;
+};
+
 interface EditReviewReqBody {
-  _id: string;
   rating: number;
   message?: string;
 }
 
 type EditReviewResBody = {
-  review: WithId<Review>;
-  product: Product;
+  updated: {
+    review: WithId<Review>;
+    product: Product;
+  }
 } | MessageResponse;
 
-async function editReview(req: Request<{}, {}, EditReviewReqBody, {}>, res: Response<EditReviewResBody>, next: NextFunction) {
-  const { _id: id, message, rating } = req.body;
+async function editReview(req: Request<EditReviewReqParams, {}, EditReviewReqBody, {}>, res: Response<EditReviewResBody>, next: NextFunction) {
+  const { message, rating } = req.body;
+  const { reviewId, productId } = req.params;
+
+  const review = await Reviews.findOne({ _id: new ObjectId(reviewId) });
+  if (!review) return res.status(404).json({ message: 'Review with the given ID not found.' });
+
+  const product = await ProductsService.findProductById(productId);
+  if (!product) return res.status(404).json({ message: 'Product with the given ID not found.' });
 
   const session = client.startSession();
   try {
-    const oldReview = await Reviews.findOne({ _id: new ObjectId(id) });
-    if (!oldReview) return res.status(404).json({ message: 'Review with the given ID not found.' });
-
     await session.withTransaction(async () => {
-      await ReviewsService.updateReview({ id, rating, message, session });
-      await ProductsService.updateRating({ productId: oldReview.productId, rating, oldRating: oldReview.rating, session });      
+      const updatedReview = await ReviewsService.updateReview({ id: reviewId, message, rating, session });
+      const updatedProduct = await ProductsService.updateRating({ productId, session });
+      if (updatedReview && updatedProduct) {
+        return res.status(200).json({ updated: { review: updatedReview, product: updatedProduct } });
+      } else {
+        throw new Error('Transaction aborted. Nothing was changed.');
+      }
     });
-
-    const updatedReview = await Reviews.findOne({ _id: new ObjectId(id) });
-    if (updatedReview) return res.status(200).json(updatedReview);
-    else throw new Error('Could not find updated review.');
-
   } catch (error) {
     next(error);
   } finally {
