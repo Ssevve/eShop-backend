@@ -11,7 +11,15 @@ interface InsertReviewArgs {
 }
 
 const insertReview = async ({ rating, message, productId, userId, userFirstName, session }: InsertReviewArgs) => {
-  const result = await Reviews.insertOne({ rating, message, productId, userId, userFirstName }, { session });
+  const result = await Reviews.insertOne(
+    {
+      rating,
+      message,
+      productId: new ObjectId(productId),
+      userId: new ObjectId(userId),
+      userFirstName,
+    },
+    { session });
   const insertedReview = await Reviews.findOne({ _id: result.insertedId }, { session });
   return insertedReview;
 };

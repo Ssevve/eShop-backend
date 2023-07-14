@@ -9,7 +9,17 @@ import { Product } from '../products/products.model';
 
 async function getReviewsByProductId(req: Request<{ productId: string; }, {}, {}, {}>, res: Response<Review[]>, next: NextFunction) {
   try {
-    const result = await Reviews.find({ productId: req.params.productId }).toArray();
+    const result = await Reviews.find({ productId: new ObjectId(req.params.productId) }).toArray();
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getReviewsByUserId(req: Request<{ userId: string; }, {}, {}, {}>, res: Response<Review[]>, next: NextFunction) {
+  console.log(req.params.userId);
+  try {
+    const result = await Reviews.find({ userId: new ObjectId(req.params.userId) }).toArray();
     res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -19,7 +29,7 @@ async function getReviewsByProductId(req: Request<{ productId: string; }, {}, {}
 interface CreateReviewReqBody {
   rating: number;
   message: string;
-  productId: string
+  productId: string;
 }
 
 type CreateReviewResBody = {
@@ -34,7 +44,7 @@ type CreateReviewResBody = {
 async function createReview(req: Request<{}, {}, CreateReviewReqBody, {}>, res: Response<CreateReviewResBody>, next: NextFunction) {
   const { message, productId, rating } = req.body;
 
-  const duplicateReview = await Reviews.findOne({ userId: req.user._id, productId });
+  const duplicateReview = await Reviews.findOne({ userId: req.user._id, productId: new ObjectId(productId) });
   if (duplicateReview) return res.status(409).json({ message: 'Duplicate review.' });
   
   const product = await ProductsService.findProductById(productId);
@@ -103,4 +113,4 @@ async function editReview(req: Request<EditReviewReqParams, {}, EditReviewReqBod
   }
 }
 
-export { getReviewsByProductId, createReview, editReview };
+export { getReviewsByProductId, getReviewsByUserId, createReview, editReview };
