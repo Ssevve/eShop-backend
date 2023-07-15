@@ -62,7 +62,7 @@ const updateRating = async ({ productId, session }: UpdateRatingArgs) => {
   const product = await findProductById(productId, session);
   if (!product) throw Error('Product with the given ID not found.');
 
-  const reviews = await Reviews.find({ productId }, { session }).toArray();
+  const reviews = await Reviews.find({ productId: new ObjectId(productId) }, { session }).toArray();
   const ratingsCount = reviews.length;
   const rating = parseFloat((reviews.reduce((acc, curr) => acc + curr.rating, 0) / ratingsCount).toFixed(1)) || 0;
   
