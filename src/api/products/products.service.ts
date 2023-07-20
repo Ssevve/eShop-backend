@@ -1,16 +1,17 @@
 import { ClientSession, ObjectId, SortDirection } from 'mongodb';
-import { Products } from './products.model';
 import { Reviews } from '../reviews/reviews.model';
+import { Products } from './products.model';
 
 interface QueryArguments {
   sort: string;
-  order: SortDirection | undefined;
+  order: number;
   skip: number;
   limit: number;
   category?: string;
 }
 
 const findProductById = async (id: string, session?: ClientSession) => {
+  if (!ObjectId.isValid(id)) return null;
   const product = await Products.findOne(new ObjectId(id), { session });
   return product;
 };
@@ -26,7 +27,7 @@ const findDiscountedProducts = async ({ sort, order, skip, limit }: QueryArgumen
         '$discountPrice',
       ],
     },
-  }).sort(sort, order).skip(skip).limit(+limit).toArray();
+  }).sort(sort, order as SortDirection).skip(skip).limit(+limit).toArray();
   totalResults = await Products.countDocuments({
     $expr: {
       $gt: [
@@ -40,14 +41,14 @@ const findDiscountedProducts = async ({ sort, order, skip, limit }: QueryArgumen
 };
 
 const findProductsByCategory = async ({ category, sort, order, skip, limit }: QueryArguments) => {
-  const products = await Products.find({ category }).sort(sort, order).skip(skip).limit(+limit).toArray();
+  const products = await Products.find({ category }).sort(sort, order as SortDirection).skip(skip).limit(+limit).toArray();
   const totalResults = await Products.countDocuments({ category });
 
   return { products, totalResults };
 };
 
 const findAllProducts = async ({ sort, order, skip, limit }: QueryArguments) => {
-  const products = await Products.find({}).sort(sort, order).skip(skip).limit(+limit).toArray();
+  const products = await Products.find({}).sort(sort, order as SortDirection).skip(skip).limit(+limit).toArray();
   const totalResults = await Products.countDocuments();
   return { products, totalResults };
   
@@ -71,4 +72,4 @@ const updateRating = async ({ productId, session }: UpdateRatingArgs) => {
   return updatedProduct;
 };
 
-export { findProductById, findDiscountedProducts, findProductsByCategory, findAllProducts, updateRating };
+export { findAllProducts, findDiscountedProducts, findProductById, findProductsByCategory, updateRating };
