@@ -18,9 +18,7 @@ const findProductById = async (id: string, session?: ClientSession) => {
 
 const findDiscountedProducts = async ({ sort, order, skip, limit }: QueryArguments) => {
   // $where is not available in free atlas tier...
-  let products;
-  let totalResults;
-  products = await Products.find({
+  const products = await Products.find({
     $expr: {
       $gt: [
         '$price',
@@ -28,7 +26,8 @@ const findDiscountedProducts = async ({ sort, order, skip, limit }: QueryArgumen
       ],
     },
   }).sort(sort, order as SortDirection).skip(skip).limit(+limit).toArray();
-  totalResults = await Products.countDocuments({
+  
+  const totalResults = await Products.countDocuments({
     $expr: {
       $gt: [
         '$price',

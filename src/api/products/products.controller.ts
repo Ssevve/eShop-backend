@@ -7,9 +7,9 @@ import { GetProductByIdReqParams, GetProductsReqQuery, GetProductsResBody, Order
 
 const getProductById = async (req: Request<GetProductByIdReqParams, {}, {}, {}>, res: Response<Product | MessageResponse>, next: NextFunction) => {
   try {
-    const result = await ProductsService.findProductById(req.params.id);
-    if (!result) return res.status(404).json({ message: 'Product not found.' });
-    res.status(200).json(result);
+    const product = await ProductsService.findProductById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found.' });
+    res.status(200).json(product);
   } catch (error) {
     next(error);
   }
@@ -33,16 +33,16 @@ const getProducts = async (req: Request<{}, {}, {}, GetProductsReqQuery>, res: R
   const skip = (parseInt(req.query.page) - 1) * PRODUCTS_PER_PAGE || 0;
 
   try {
-    let result: Omit<GetProductsResBody, 'productsPerPage'>;
+    let results: Omit<GetProductsResBody, 'productsPerPage'>;
     if (category === 'Discounts') {
-      result = await ProductsService.findDiscountedProducts({ limit: PRODUCTS_PER_PAGE, skip, sort, order });
+      results = await ProductsService.findDiscountedProducts({ limit: PRODUCTS_PER_PAGE, skip, sort, order });
     } else if (categories.includes(category)) {
-      result = await ProductsService.findProductsByCategory({ category, limit: PRODUCTS_PER_PAGE, skip, sort, order });
+      results = await ProductsService.findProductsByCategory({ category, limit: PRODUCTS_PER_PAGE, skip, sort, order });
     } else {
-      result = await ProductsService.findAllProducts({ sort, order, skip, limit: PRODUCTS_PER_PAGE });
+      results = await ProductsService.findAllProducts({ sort, order, skip, limit: PRODUCTS_PER_PAGE });
     }
 
-    res.status(200).json({ ...result, productsPerPage: PRODUCTS_PER_PAGE });
+    res.status(200).json({ ...results, productsPerPage: PRODUCTS_PER_PAGE });
   } catch (error) {
     next(error);
   }
