@@ -5,7 +5,7 @@ import { Product } from './products.model';
 import * as ProductsService from './products.service';
 import { GetProductByIdReqParams, GetProductsReqQuery, GetProductsResBody, Orders } from './products.types';
 
-async function getProductById(req: Request<GetProductByIdReqParams, {}, {}, {}>, res: Response<Product | MessageResponse>, next: NextFunction) {
+const getProductById = async (req: Request<GetProductByIdReqParams, {}, {}, {}>, res: Response<Product | MessageResponse>, next: NextFunction) => {
   try {
     const result = await ProductsService.findProductById(req.params.id);
     if (!result) return res.status(404).json({ message: 'Product not found.' });
@@ -13,9 +13,9 @@ async function getProductById(req: Request<GetProductByIdReqParams, {}, {}, {}>,
   } catch (error) {
     next(error);
   }
-}
+};
 
-async function getProducts(req: Request<{}, {}, {}, GetProductsReqQuery>, res: Response<GetProductsResBody>, next: NextFunction) {
+const getProducts = async (req: Request<{}, {}, {}, GetProductsReqQuery>, res: Response<GetProductsResBody>, next: NextFunction) => {
 
   const DEFAULT_SORT = '_id';
   const possibleSorts = ['name', 'discountPrice'];
@@ -46,7 +46,7 @@ async function getProducts(req: Request<{}, {}, {}, GetProductsReqQuery>, res: R
   } catch (error) {
     next(error);
   }
-}
+};
 
 export { getProductById, getProducts };
 
