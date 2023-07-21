@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import admin from '../firebaseConfig';
-import { findUserByFirebaseId } from '../api/users/users.service';
-import FirebaseErrors from '../lib/firebaseErrors';
+import admin from '@/firebaseConfig';
+import { findSingleByFirebaseId } from '@/api/users/users.service';
+import FirebaseErrors from '@/lib/firebaseErrors';
 
 async function ensureAuth(req: Request, res: Response, next: NextFunction) {
   try {
@@ -11,7 +11,7 @@ async function ensureAuth(req: Request, res: Response, next: NextFunction) {
     const firebaseUser = await admin.auth.verifyIdToken(firebaseToken);
     if (!firebaseUser) return res.sendStatus(401);
   
-    const user = await findUserByFirebaseId(firebaseUser.uid);
+    const user = await findSingleByFirebaseId(firebaseUser.uid);
   
     req.user = user;
     next();

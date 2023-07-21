@@ -1,14 +1,26 @@
-import { User, Users } from './users.model';
+import admin from '@/firebaseConfig';
+import { Users } from './users.model';
+import { InsertSingleArgs } from './users.types';
 
-const findUserByFirebaseId = async (firebaseId: string) => {
+const findSingleByFirebaseId = async (firebaseId: string) => {
   const user = await Users.findOne({ firebaseId });
   return user;
 };
 
-const insertUser = async (user: User) => {
-  await Users.insertOne(user);
-  const insertedUser = await findUserByFirebaseId(user.firebaseId);
-  return insertedUser;
+const insertSingle = async ({ email, password, firstName, lastName }: InsertSingleArgs) => {
+
+  const newFirebaseUser = await admin.auth.createUser({
+    email,
+    password,
+  });
+
+  if (newFirebaseUser) {
+    const insertResult = await Users.insertOne({ email, firstName, lastName, firebaseId: newFirebaseUser.uid });
+    const newUser = await Users.findOne(insertResult.insertedId);
+    return newUser;
+  }
+
+  return null;
 };
 
-export { findUserByFirebaseId, insertUser };
+export { findSingleByFirebaseId, insertSingle };
