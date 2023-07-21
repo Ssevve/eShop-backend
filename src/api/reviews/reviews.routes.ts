@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import * as ReviewsController from './reviews.controller';
 import ensureAuth from '../../middleware/ensureAuth';
 import validateRequest from '../../middleware/validateRequest';
+import * as ReviewsController from './reviews.controller';
 import { createReviewSchema, editReviewSchema } from './reviews.schemas';
 
 const router = Router();

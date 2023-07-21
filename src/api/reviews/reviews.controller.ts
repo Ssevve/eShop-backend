@@ -1,116 +1,61 @@
 import { NextFunction, Request, Response } from 'express';
-import { ObjectId, WithId } from 'mongodb';
-import * as ReviewsService from './reviews.service';
-import { Review, Reviews } from './reviews.model';
-import MessageResponse from '../../types/MessageResponse';
 import * as ProductsService from '../products/products.service';
-import { client } from '../../db';
-import { Product } from '../products/products.model';
+import { Review } from './reviews.model';
+import * as ReviewsService from './reviews.service';
+import { CreateReviewReqBody, CreateReviewResBody, EditReviewReqBody, EditReviewReqParams, EditReviewResBody, GetReviewsByProductIdReqParams, GetReviewsByUserIdReqParams } from './reviews.types';
 
-async function getReviewsByProductId(req: Request<{ productId: string; }, {}, {}, {}>, res: Response<Review[]>, next: NextFunction) {
+const getReviewsByProductId = async (req: Request<GetReviewsByProductIdReqParams, {}, {}, {}>, res: Response<Review[]>, next: NextFunction) => {
   try {
-    const result = await Reviews.find({ productId: new ObjectId(req.params.productId) }).toArray();
-    res.status(200).json(result);
+    const reviews = await ReviewsService.findAllByProductId(req.params.productId);
+    res.status(200).json(reviews);
   } catch (error) {
     next(error);
   }
-}
-
-async function getReviewsByUserId(req: Request<{ userId: string; }, {}, {}, {}>, res: Response<Review[]>, next: NextFunction) {
-  console.log(req.params.userId);
-  try {
-    const result = await Reviews.find({ userId: new ObjectId(req.params.userId) }).toArray();
-    res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-}
-
-interface CreateReviewReqBody {
-  rating: number;
-  message: string;
-  productId: string;
-}
-
-type CreateReviewResBody = {
-  created: {
-    review: WithId<Review>;
-  },
-  updated: {
-    product: Product;
-  }
-} | MessageResponse;
-
-async function createReview(req: Request<{}, {}, CreateReviewReqBody, {}>, res: Response<CreateReviewResBody>, next: NextFunction) {
-  const { message, productId, rating } = req.body;
-
-  const duplicateReview = await Reviews.findOne({ userId: req.user._id, productId: new ObjectId(productId) });
-  if (duplicateReview) return res.status(409).json({ message: 'Duplicate review.' });
-  
-  const product = await ProductsService.findProductById(productId);
-  if (!product) res.status(404).json({ message: 'Product with the given ID not found.' });
-  
-  const session = client.startSession();
-  try {
-    await session.withTransaction(async () => {
-      const insertedReview = await ReviewsService.insertReview({ rating, message, productId, userFirstName: req.user.firstName, userId: req.user._id, session });
-      const updatedProduct = await ProductsService.updateRating({ productId, session });
-      if (insertedReview && updatedProduct) {
-        return res.status(201).json({ created: { review: insertedReview }, updated: { product: updatedProduct } });
-      } else {
-        throw new Error('Transaction aborted. Review was not created.');
-      }
-    });
-  } catch (error) {
-    next(error);
-  } finally {
-    await session.endSession();
-  }
-}
-
-type EditReviewReqParams = {
-  reviewId: string;
-  productId: string;
 };
 
-interface EditReviewReqBody {
-  rating: number;
-  message?: string;
-}
-
-type EditReviewResBody = {
-  updated: {
-    review: WithId<Review>;
-    product: Product;
+const getReviewsByUserId = async (req: Request<GetReviewsByUserIdReqParams, {}, {}, {}>, res: Response<Review[]>, next: NextFunction) => {
+  try {
+    const reviews = await ReviewsService.findAllByUserId(req.params.userId);
+    res.status(200).json(reviews);
+  } catch (error) {
+    next(error);
   }
-} | MessageResponse;
+};
 
-async function editReview(req: Request<EditReviewReqParams, {}, EditReviewReqBody, {}>, res: Response<EditReviewResBody>, next: NextFunction) {
+const createReview = async (req: Request<{}, {}, CreateReviewReqBody, {}>, res: Response<CreateReviewResBody>, next: NextFunction) => {
+  const { message, productId, rating } = req.body;
+  const { firstName: userFirstName, _id: userId } = req.user;
+
+  const duplicate = await ReviewsService.findDuplicate(userId, productId);
+  if (duplicate) return res.status(409).json({ message: 'Duplicate review.' });
+  
+  const product = await ProductsService.findSingleById(productId);
+  if (!product) res.status(404).json({ message: 'Product with the given ID not found.' });
+  try {
+    const results = await ReviewsService.createSingle({ rating, message, productId, userFirstName, userId });
+    return res.status(201).json(results);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const editReview = async (req: Request<EditReviewReqParams, {}, EditReviewReqBody, {}>, res: Response<EditReviewResBody | void>, next: NextFunction) => {
   const { message, rating } = req.body;
   const { reviewId, productId } = req.params;
 
-  const review = await Reviews.findOne({ _id: new ObjectId(reviewId) });
+  const review = await ReviewsService.findSingleById(reviewId);
   if (!review) return res.status(404).json({ message: 'Review with the given ID not found.' });
 
-  const product = await ProductsService.findProductById(productId);
+  const product = await ProductsService.findSingleById(productId);
   if (!product) return res.status(404).json({ message: 'Product with the given ID not found.' });
 
-  const session = client.startSession();
   try {
-    await session.withTransaction(async () => {
-      const updatedReview = await ReviewsService.updateReview({ id: reviewId, message, rating, session });
-      const updatedProduct = await ProductsService.updateRating({ productId, session });
-      if (updatedReview && updatedProduct) {
-        return res.status(200).json({ updated: { review: updatedReview, product: updatedProduct } });
-      } else {
-        throw new Error('Transaction aborted. Nothing was changed.');
-      }
-    });
+    const results = await ReviewsService.updateSingle({ id: reviewId, rating, message, productId });
+    return res.status(200).json(results);
   } catch (error) {
     next(error);
-  } finally {
-    await session.endSession();
   }
-}
+};
 
-export { getReviewsByProductId, getReviewsByUserId, createReview, editReview };
+export { createReview, editReview, getReviewsByProductId, getReviewsByUserId };
+
