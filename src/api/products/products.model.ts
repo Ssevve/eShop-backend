@@ -1,5 +1,5 @@
-import * as z from 'zod';
 import { ObjectId } from 'mongodb';
+import * as z from 'zod';
 import { db } from '../../db';
 
 const Product = z.object({
