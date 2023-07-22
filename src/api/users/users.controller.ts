@@ -1,3 +1,4 @@
+import FirebaseErrors from '@/lib/firebaseErrors';
 import MessageResponse from '@/types/MessageResponse';
 import { NextFunction, Request, Response } from 'express';
 import { WithId } from 'mongodb';
@@ -22,7 +23,7 @@ const registerUser = async (req: Request<{}, {}, RegisterUserReqBody, {}>, res: 
     if (!newUser) return res.status(500).json({ message: 'Something went wrong. Please try again.' });
     res.status(201).json(newUser);
   } catch (error) {
-    if (error.code === 'auth/email-already-exists') res.statusCode = 409;
+    if (error.code === FirebaseErrors.EmailTaken) res.statusCode = 409;
     next(error);
   }
 };
