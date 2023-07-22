@@ -1,5 +1,5 @@
-import * as z from 'zod';
 import { db } from '@/db';
+import * as z from 'zod';
 
 const User = z.object({
   email: z.string().email(),

@@ -28,3 +28,4 @@ const registerUser = async (req: Request<{}, {}, RegisterUserReqBody, {}>, res: 
 };
 
 export { getUserByFirebaseId, registerUser };
+

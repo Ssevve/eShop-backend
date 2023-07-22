@@ -24,3 +24,4 @@ const insertSingle = async ({ email, password, firstName, lastName }: InsertSing
 };
 
 export { findSingleByFirebaseId, insertSingle };
+

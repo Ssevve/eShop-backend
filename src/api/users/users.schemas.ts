@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { userConstraints } from '@/lib/constants';
+import { z } from 'zod';
 
 export const registerSchema = z.object({
   body: z.object({
