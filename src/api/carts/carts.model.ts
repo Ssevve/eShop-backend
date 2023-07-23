@@ -1,6 +1,6 @@
+import { db } from '@/db';
 import { ObjectId } from 'mongodb';
 import * as z from 'zod';
-import { db } from '@/db';
 
 const CartProduct = z.object({
   productId: z.instanceof(ObjectId),

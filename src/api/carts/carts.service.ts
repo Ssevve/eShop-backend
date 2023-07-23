@@ -1,14 +1,13 @@
 import { ObjectId } from 'mongodb';
-import { CartProduct, Carts } from './carts.model';
 import cartAggregationPipeline from './cartAggregationPipeline';
+import { Carts } from './carts.model';
+import { UpdateSingleCartParams } from './carts.types';
 
 const findSingleByUserId = async (userId: string) => {
   const cartAggregationResults = await Carts.aggregate([
     {
       $match: {
-        'userId': new ObjectId(
-          userId,
-        ),
+        'userId': new ObjectId(userId),
       },
     },
     ...cartAggregationPipeline,
@@ -28,9 +27,23 @@ const createSingle = async (userId: string) => {
   return cart;
 };
 
-const updateSingle = async (cartId: string, products: CartProduct[]) => {
-  const productsWithObjectIds = products.map((product) => ({ ...product, productId: new ObjectId(product.productId) }));
-  await Carts.updateOne({ _id: new ObjectId(cartId) }, { $set: { 'products': productsWithObjectIds, 'updatedAt': new Date() } });
+const updateSingle = async ({ cartId, productId, quantity }: UpdateSingleCartParams) => {
+  const cartObjectId = new ObjectId(cartId);
+  const cart = await Carts.findOne(cartObjectId);
+
+  const newProducts = cart?.products
+    .filter((product) => product.productId.toString() !== productId)
+    .concat({ productId: new ObjectId(productId), quantity });
+
+  const updateResult = await Carts.updateOne({ _id: cartObjectId },
+    { 
+      $set: 
+      { 
+        'products': newProducts,
+        'updatedAt': new Date(),
+      },
+    });
+  if (!updateResult.modifiedCount) throw Error('Failed to update the cart.');
   const cartAggregationResults = await Carts.aggregate([
     {
       $match: {
@@ -43,3 +56,4 @@ const updateSingle = async (cartId: string, products: CartProduct[]) => {
 };
 
 export { createSingle, findSingleByUserId, updateSingle };
+

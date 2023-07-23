@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import * as CartsService from './carts.service';
-import { CartProduct } from './carts.model';
 import { Document } from 'mongodb';
-import MessageResponse from '@/types/MessageResponse';
+import * as CartsService from './carts.service';
+import { UpdateCartByIdReqBody, UpdateCartByIdReqParams, UpdateCartByIdResBody } from './carts.types';
 
 const getCartByUserId = async (req: Request<{}, {}, {}, {}>, res: Response<Document>, next: NextFunction) => {
   try {
@@ -20,14 +19,16 @@ const getCartByUserId = async (req: Request<{}, {}, {}, {}>, res: Response<Docum
   }
 };
 
-const updateCartById = async (req: Request<{ cartId: string }, {}, { products: CartProduct[] }, {}>, res: Response<Document | MessageResponse>, next: NextFunction) => {
-  const { cartId } = req.params;
+const updateCartById = async (req: Request<UpdateCartByIdReqParams, {}, UpdateCartByIdReqBody, {}>, res: Response<UpdateCartByIdResBody>, next: NextFunction) => {
   const cart = await CartsService.findSingleByUserId(req.user._id);
   if (!cart) return res.status(404).json({ message: 'Cart not found.' });
+
+  const { cartId } = req.params;
   if (cart._id.toString() !== cartId) return res.status(401).json({ message: 'You can not edit this cart!' });
 
   try {
-    const updatedCart = await CartsService.updateSingle(cartId, req.body.products);
+    const { productId, quantity } = req.body;
+    const updatedCart = await CartsService.updateSingle({ cartId, productId, quantity });
     res.status(200).json(updatedCart);
   } catch (error) {
     next(error);
@@ -35,3 +36,4 @@ const updateCartById = async (req: Request<{ cartId: string }, {}, { products: C
 };
 
 export { getCartByUserId, updateCartById };
+
