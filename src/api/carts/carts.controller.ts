@@ -19,7 +19,7 @@ const getCartByUserId = async (req: Request<{}, {}, {}, {}>, res: Response<Docum
   }
 };
 
-const updateCartById = async (req: Request<UpdateCartByIdReqParams, {}, UpdateCartByIdReqBody, {}>, res: Response<UpdateCartByIdResBody>, next: NextFunction) => {
+const addCartProduct = async (req: Request<UpdateCartByIdReqParams, {}, UpdateCartByIdReqBody, {}>, res: Response<UpdateCartByIdResBody>, next: NextFunction) => {
   const cart = await CartsService.findSingleByUserId(req.user._id);
   if (!cart) return res.status(404).json({ message: 'Cart not found.' });
 
@@ -35,5 +35,16 @@ const updateCartById = async (req: Request<UpdateCartByIdReqParams, {}, UpdateCa
   }
 };
 
-export { getCartByUserId, updateCartById };
+const updateCartProductQuantity = () => {};
+const removeCartProduct = () => {};
+const clearCart = () => {};
+
+
+export {
+  getCartByUserId,
+  addCartProduct,
+  updateCartProductQuantity,
+  removeCartProduct,
+  clearCart,
+};
 

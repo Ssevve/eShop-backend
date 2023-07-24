@@ -1,4 +1,4 @@
-const cartAggregation = 
+const defaultCartAggregationPipeline = 
   [
     {
       $unwind: {
@@ -64,4 +64,4 @@ const cartAggregation =
     },
   ];
 
-export default cartAggregation;
+export default defaultCartAggregationPipeline;
