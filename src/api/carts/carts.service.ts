@@ -36,24 +36,29 @@ const createSingle = async (userId: string) => {
 const addSingleProduct = async ({ cartId, productId, quantity }: AddSingleProductParams) => {
   const cartObjectId = new ObjectId(cartId);
   const cart = await Carts.findOne(cartObjectId);
+  if (!cart) {
+    throw ReferenceError('Cart not found.');
+  }
 
-  let newProduct = {
+  const newProduct = {
     productId: new ObjectId(productId),
     quantity,
   };
 
-  const duplicate = cart?.products.find((product) => product.productId.toString() === productId);
+  const duplicate = cart.products.find((product) => product.productId.toString() === productId);
   if (duplicate) {
-    let newQuantity = quantity += duplicate.quantity;
-    if (newQuantity < productConstraints.quantity.min) newQuantity = productConstraints.quantity.min;
-    else if (newQuantity > productConstraints.quantity.max) newQuantity = productConstraints.quantity.max;
+    const newQuantity = quantity += duplicate.quantity;
+    if (newQuantity < productConstraints.quantity.min 
+      || newQuantity > productConstraints.quantity.max) {
+      throw RangeError('Invalid quantity.');
+    }
     newProduct.quantity = newQuantity;
   }
 
-  const newProducts = cart?.products
+  const newProducts = cart.products
     .filter((product) => product.productId.toString() !== productId);
 
-  newProducts?.push(newProduct);
+  newProducts.push(newProduct);
 
   const updateResult = await Carts.updateOne({ _id: cartObjectId },
     { 
@@ -63,7 +68,9 @@ const addSingleProduct = async ({ cartId, productId, quantity }: AddSingleProduc
         'updatedAt': new Date(),
       },
     });
-  if (!updateResult.modifiedCount) throw Error('Failed to update the cart.');
+  if (!updateResult.modifiedCount) {
+    throw Error('Failed to update the cart.');
+  }
   return aggregateWithCartId(cartId);
 };
 

@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 const invalidQuantityErrorMessage = 'Invalid quantity value.';
 
-export const updateCartSchema = z.object({
+export const addCartProductSchema = z.object({
   body: z.object({
     productId: z
       .string({

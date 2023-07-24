@@ -3,7 +3,7 @@ import { Document } from 'mongodb';
 import * as CartsService from './carts.service';
 import { UpdateCartByIdReqBody, UpdateCartByIdReqParams, UpdateCartByIdResBody } from './carts.types';
 
-const getCartByUserId = async (req: Request<{}, {}, {}, {}>, res: Response<Document>, next: NextFunction) => {
+export const getCartByUserId = async (req: Request<{}, {}, {}, {}>, res: Response<Document>, next: NextFunction) => {
   try {
     const cart = await CartsService.findSingleByUserId(req.user._id);
 
@@ -19,7 +19,7 @@ const getCartByUserId = async (req: Request<{}, {}, {}, {}>, res: Response<Docum
   }
 };
 
-const addCartProduct = async (req: Request<UpdateCartByIdReqParams, {}, UpdateCartByIdReqBody, {}>, res: Response<UpdateCartByIdResBody>, next: NextFunction) => {
+export const addCartProduct = async (req: Request<UpdateCartByIdReqParams, {}, UpdateCartByIdReqBody, {}>, res: Response<UpdateCartByIdResBody>, next: NextFunction) => {
   const cart = await CartsService.findSingleByUserId(req.user._id);
   if (!cart) return res.status(404).json({ message: 'Cart not found.' });
 
@@ -28,23 +28,16 @@ const addCartProduct = async (req: Request<UpdateCartByIdReqParams, {}, UpdateCa
 
   try {
     const { productId, quantity } = req.body;
-    const updatedCart = await CartsService.updateSingle({ cartId, productId, quantity });
+    const updatedCart = await CartsService.addSingleProduct({ cartId, productId, quantity });
     res.status(200).json(updatedCart);
   } catch (error) {
+    if (error instanceof RangeError) return res.status(400).json({ message: error.message });
+    if (error instanceof ReferenceError) return res.status(404).json({ message: error.message });
     next(error);
   }
 };
 
-const updateCartProductQuantity = () => {};
-const removeCartProduct = () => {};
-const clearCart = () => {};
-
-
-export {
-  getCartByUserId,
-  addCartProduct,
-  updateCartProductQuantity,
-  removeCartProduct,
-  clearCart,
-};
+export const updateCartProductQuantity = () => {};
+export const removeCartProduct = () => {};
+export const clearCart = () => {};
 

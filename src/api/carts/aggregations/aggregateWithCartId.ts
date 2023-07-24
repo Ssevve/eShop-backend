@@ -1,16 +1,15 @@
 import { ObjectId } from 'mongodb';
-import defaultCartAggregationPipeline from './defaultAggregationPipeline';
+import defaultAggregationPipeline from './defaultAggregationPipeline';
 import { Carts } from '../carts.model';
 
 const aggregateWithCartId = async (cartId: string) => {
-  const aggregationResult =  await Carts.aggregate([
-  
+  const aggregationResult = await Carts.aggregate([
     {
       $match: {
-        'cartId': new ObjectId(cartId),
+        '_id': new ObjectId(cartId),
       },
     },
-    ...defaultCartAggregationPipeline,
+    ...defaultAggregationPipeline,
   ]).toArray();
 
   return aggregationResult[0];
