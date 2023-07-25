@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { Document } from 'mongodb';
 import * as CartsService from './carts.service';
-import { AddCartProductParams, AddCartProductReqBody, AddCartProductResBody } from './carts.types';
+import { AddCartProductParams, AddCartProductReqBody, CartResBody, UpdateCartProductQuantityParams, UpdateCartProductQuantityReqBody } from './carts.types';
 
 export const getCartByUserId = async (req: Request<{}, {}, {}, {}>, res: Response<Document>, next: NextFunction) => {
   try {
@@ -19,7 +19,7 @@ export const getCartByUserId = async (req: Request<{}, {}, {}, {}>, res: Respons
   }
 };
 
-export const addCartProduct = async (req: Request<AddCartProductParams, {}, AddCartProductReqBody, {}>, res: Response<AddCartProductResBody>, next: NextFunction) => {
+export const addCartProduct = async (req: Request<AddCartProductParams, {}, AddCartProductReqBody, {}>, res: Response<CartResBody>, next: NextFunction) => {
   const cart = await CartsService.findSingleByUserId(req.user._id);
   if (!cart) return res.status(404).json({ message: 'Cart not found.' });
 
@@ -37,7 +37,20 @@ export const addCartProduct = async (req: Request<AddCartProductParams, {}, AddC
   }
 };
 
-export const updateCartProductQuantity = () => {};
+export const updateCartProductQuantity = async (req: Request<UpdateCartProductQuantityParams, {}, UpdateCartProductQuantityReqBody, {}>, res: Response<CartResBody>, next: NextFunction) => {
+  const cart = await CartsService.findSingleByUserId(req.user._id);
+  if (!cart) return res.status(404).json({ message: 'Cart not found.' });
+
+  try {
+    const { cartId, productId } = req.params;
+    const updatedCart = await CartsService.updateSingleProductQuantity({ cartId, productId, quantity: req.body.quantity });
+    res.status(200).json(updatedCart);
+  } catch (error) {
+    if (error instanceof RangeError) return res.status(400).json({ message: error.message });
+    if (error instanceof ReferenceError) return res.status(404).json({ message: error.message });
+    next(error);
+  }
+};
 export const removeCartProduct = () => {};
 export const clearCart = () => {};
 

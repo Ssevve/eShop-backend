@@ -10,7 +10,14 @@ export interface AddCartProductReqBody {
   quantity: number;
 }
 
-export type AddCartProductResBody = Document | MessageResponse;
+export type UpdateCartProductQuantityParams = {
+  cartId: string;
+  productId: string;
+};
+export interface UpdateCartProductQuantityReqBody {
+  quantity: number;
+}
+export type CartResBody = Document | MessageResponse;
 
 export interface UpdateSingleProductQuantityParams {
   cartId: string;

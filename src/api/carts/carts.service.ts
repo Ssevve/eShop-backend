@@ -36,9 +36,7 @@ const createSingle = async (userId: string) => {
 const addSingleProduct = async ({ cartId, productId, quantity }: AddSingleProductParams) => {
   const cartObjectId = new ObjectId(cartId);
   const cart = await Carts.findOne(cartObjectId);
-  if (!cart) {
-    throw ReferenceError('Cart not found.');
-  }
+  if (!cart) throw ReferenceError('Cart not found.');
 
   const newProduct = {
     productId: new ObjectId(productId),
@@ -55,9 +53,7 @@ const addSingleProduct = async ({ cartId, productId, quantity }: AddSingleProduc
     newProduct.quantity = newQuantity;
   }
 
-  const newProducts = cart.products
-    .filter((product) => product.productId.toString() !== productId);
-
+  const newProducts = cart.products.filter((product) => product.productId.toString() !== productId);
   newProducts.push(newProduct);
 
   const updateResult = await Carts.updateOne({ _id: cartObjectId },
@@ -68,28 +64,29 @@ const addSingleProduct = async ({ cartId, productId, quantity }: AddSingleProduc
         'updatedAt': new Date(),
       },
     });
-  if (!updateResult.modifiedCount) {
-    throw Error('Failed to update the cart.');
-  }
+  if (!updateResult.modifiedCount) throw Error('Failed to update the cart.');
+
   return aggregateWithCartId(cartId);
 };
 
 const updateSingleProductQuantity = async ({ cartId, productId, quantity }: UpdateSingleProductQuantityParams) => {
   const cartObjectId = new ObjectId(cartId);
   const cart = await Carts.findOne(cartObjectId);
+  if (!cart) throw ReferenceError('Cart not found.');
   
-  const product = cart?.products.find((prod) => prod.productId.toString() === productId);
+  const product = cart.products.find((prod) => prod.productId.toString() === productId);
   if (product) product.quantity = quantity;
 
   const updateResult = await Carts.updateOne({ _id: cartObjectId },
     { 
       $set:
       { 
-        'products': cart?.products,
+        'products': cart.products,
         'updatedAt': new Date(),
       },
     });
   if (!updateResult.modifiedCount) throw Error('Failed to update the cart.');
+  
   return aggregateWithCartId(cartId);
 };
 
