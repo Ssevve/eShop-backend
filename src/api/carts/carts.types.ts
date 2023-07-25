@@ -1,24 +1,24 @@
 import MessageResponse from '@/types/MessageResponse';
 import { Document } from 'mongodb';
 
-export type UpdateCartByIdReqParams = {
+export type AddCartProductParams = {
   cartId: string;
 };
 
-export interface UpdateCartByIdReqBody {
+export interface AddCartProductReqBody {
   productId: string;
   quantity: number;
 }
 
-export type UpdateCartByIdResBody = Document | MessageResponse;
+export type AddCartProductResBody = Document | MessageResponse;
 
-export interface AddSingleProductParams {
+export interface UpdateSingleProductQuantityParams {
   cartId: string;
   productId: string;
   quantity: number;
 }
 
-export interface UpdateSingleProductQuantityParams {
+export interface AddSingleProductParams {
   cartId: string;
   productId: string;
   quantity: number;

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { Document } from 'mongodb';
 import * as CartsService from './carts.service';
-import { UpdateCartByIdReqBody, UpdateCartByIdReqParams, UpdateCartByIdResBody } from './carts.types';
+import { AddCartProductParams, AddCartProductReqBody, AddCartProductResBody } from './carts.types';
 
 export const getCartByUserId = async (req: Request<{}, {}, {}, {}>, res: Response<Document>, next: NextFunction) => {
   try {
@@ -19,7 +19,7 @@ export const getCartByUserId = async (req: Request<{}, {}, {}, {}>, res: Respons
   }
 };
 
-export const addCartProduct = async (req: Request<UpdateCartByIdReqParams, {}, UpdateCartByIdReqBody, {}>, res: Response<UpdateCartByIdResBody>, next: NextFunction) => {
+export const addCartProduct = async (req: Request<AddCartProductParams, {}, AddCartProductReqBody, {}>, res: Response<AddCartProductResBody>, next: NextFunction) => {
   const cart = await CartsService.findSingleByUserId(req.user._id);
   if (!cart) return res.status(404).json({ message: 'Cart not found.' });
 
