@@ -3,8 +3,8 @@ import { invalidProductIdMessage, requiredProductIdMessage } from '@/lib/errorMe
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
 
-const invalidQuantityErrorMessage = 'Invalid quantity value.';
-const requiredQuantityErrorMessage = 'Quantity is required.';
+const invalidAmountErrorMessage = 'Invalid amount value.';
+const requiredAmountErrorMessage = 'Amount is required.';
 const invalidCartIdErrorMessage = 'Invalid cart ID.';
 
 export const addCartProductSchema = z.object({
@@ -14,12 +14,12 @@ export const addCartProductSchema = z.object({
         required_error: requiredProductIdMessage,
       })
       .refine((val) => ObjectId.isValid(val), { message: invalidProductIdMessage }),
-    quantity: z
+    amount: z
       .number({
-        required_error: requiredQuantityErrorMessage,
+        required_error: requiredAmountErrorMessage,
       })
-      .min(productConstraints.quantity.min, invalidQuantityErrorMessage)
-      .max(productConstraints.quantity.max, invalidQuantityErrorMessage),
+      .min(productConstraints.amount.min, invalidAmountErrorMessage)
+      .max(productConstraints.amount.max, invalidAmountErrorMessage),
   }),
   params: z.object({
     cartId: z
@@ -28,14 +28,14 @@ export const addCartProductSchema = z.object({
   }),
 });
 
-export const updateCartProductQuantitySchema = z.object({
+export const updateCartProductAmountSchema = z.object({
   body: z.object({
-    quantity: z
+    amount: z
       .number({
-        required_error: requiredQuantityErrorMessage,
+        required_error: requiredAmountErrorMessage,
       })
-      .min(productConstraints.quantity.min, invalidQuantityErrorMessage)
-      .max(productConstraints.quantity.max, invalidQuantityErrorMessage),
+      .min(productConstraints.amount.min, invalidAmountErrorMessage)
+      .max(productConstraints.amount.max, invalidAmountErrorMessage),
   }),
   params: z.object({
     cartId: z

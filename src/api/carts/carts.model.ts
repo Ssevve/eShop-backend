@@ -4,7 +4,7 @@ import * as z from 'zod';
 
 const CartProduct = z.object({
   productId: z.instanceof(ObjectId),
-  quantity: z.number(),
+  amount: z.number(),
 });
 
 const Cart = z.object({

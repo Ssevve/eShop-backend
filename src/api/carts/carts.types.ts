@@ -1,5 +1,6 @@
 import MessageResponse from '@/types/MessageResponse';
-import { Document } from 'mongodb';
+import { WithId } from 'mongodb';
+import { Cart } from './carts.model';
 
 export type AddCartProductParams = {
   cartId: string;
@@ -7,28 +8,28 @@ export type AddCartProductParams = {
 
 export interface AddCartProductReqBody {
   productId: string;
-  quantity: number;
+  amount: number;
 }
 
-export type UpdateCartProductQuantityParams = {
+export type UpdateCartProductAmountParams = {
   cartId: string;
   productId: string;
 };
-export interface UpdateCartProductQuantityReqBody {
-  quantity: number;
+export interface UpdateCartProductAmountReqBody {
+  amount: number;
 }
-export type CartResBody = Document | MessageResponse;
+export type CartResBody = WithId<Cart> | MessageResponse;
 
-export interface UpdateSingleProductQuantityParams {
+export interface UpdateSingleProductAmountParams {
   cartId: string;
   productId: string;
-  quantity: number;
+  amount: number;
 }
 
 export interface AddSingleProductParams {
   cartId: string;
   productId: string;
-  quantity: number;
+  amount: number;
 }
 
 export interface RemoveSingleProductParams {

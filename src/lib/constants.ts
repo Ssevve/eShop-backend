@@ -4,10 +4,10 @@ type MinMaxKey = MinKey | MaxKey;
 type ConstraintRecord<T extends string> = Record<T, number>;
 
 type RatingConstraints = ConstraintRecord<MinMaxKey>;
-type QuantityConstraints = ConstraintRecord<MinMaxKey>;
+type AmountConstraints = ConstraintRecord<MinMaxKey>;
 interface ProductConstraints { 
   rating: RatingConstraints;
-  quantity: QuantityConstraints;
+  amount: AmountConstraints;
 }
 
 export const productConstraints: ProductConstraints = {
@@ -15,7 +15,7 @@ export const productConstraints: ProductConstraints = {
     min: 1,
     max: 5,
   },
-  quantity: {
+  amount: {
     min: 1,
     max: 99,
   },
