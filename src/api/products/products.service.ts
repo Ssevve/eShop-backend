@@ -11,37 +11,56 @@ const findSingleById = async (id: string, session?: ClientSession) => {
 
 const findAllDiscounted = async ({ sort, order, skip, limit }: QueryArguments) => {
   // $where is not available in free atlas tier...
-  const products = await Products.find({
-    $expr: {
-      $gt: [
-        '$price',
-        '$discountPrice',
-      ],
-    },
-  }).sort(sort, order as SortDirection).skip(skip).limit(+limit).toArray();
+  const products = await Products
+    .find({
+      $expr: {
+        $gt: [
+          '$price',
+          '$discountPrice',
+        ],
+      },
+    })
+    .sort(sort, order as SortDirection)
+    .skip(skip)
+    .limit(+limit)
+    .toArray();
   
-  const totalResults = await Products.countDocuments({
-    $expr: {
-      $gt: [
-        '$price',
-        '$discountPrice',
-      ],
-    },
-  });
+  const totalResults = await Products
+    .countDocuments({
+      $expr: {
+        $gt: [
+          '$price',
+          '$discountPrice',
+        ],
+      },
+    });
 
   return { products, totalResults };
 };
 
 const findAllByCategory = async ({ category, sort, order, skip, limit }: QueryArguments) => {
-  const products = await Products.find({ category }).sort(sort, order as SortDirection).skip(skip).limit(+limit).toArray();
-  const totalResults = await Products.countDocuments({ category });
+  const products = await Products
+    .find({ category })
+    .sort(sort, order as SortDirection)
+    .skip(skip).limit(+limit)
+    .toArray();
+
+  const totalResults = await Products
+    .countDocuments({ category });
 
   return { products, totalResults };
 };
 
 const findAll = async ({ sort, order, skip, limit }: QueryArguments) => {
-  const products = await Products.find({}).sort(sort, order as SortDirection).skip(skip).limit(+limit).toArray();
-  const totalResults = await Products.countDocuments();
+  const products = await Products
+    .find({})
+    .sort(sort, order as SortDirection)
+    .skip(skip)
+    .limit(+limit)
+    .toArray();
+
+  const totalResults = await Products
+    .countDocuments();
   return { products, totalResults };
   
 };
