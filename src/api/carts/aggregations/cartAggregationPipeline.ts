@@ -61,9 +61,7 @@ const cartAggregationPipeline =
           input: '$products',
           as: 'product',
           cond: {
-            'amount': {
-              in: '$$product',
-            },
+            $ifNull: ['$$product.amount', false],
           },
         },
       },
