@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import ensureAuth from '../../middleware/ensureAuth';
-import validateRequest from '../../middleware/validateRequest';
+import ensureAuth from '@/middleware/ensureAuth';
+import validateRequest from '@/middleware/validateRequest';
 import * as ReviewsController from './reviews.controller';
 import { createReviewSchema, editReviewSchema } from './reviews.schemas';
 

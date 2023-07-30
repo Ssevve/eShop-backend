@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import * as z from 'zod';
-import { db } from '../../db';
+import { db } from '@/db';
 
 const Review = z.object({
   productId: z.instanceof(ObjectId),

@@ -1,8 +1,8 @@
+import attachReqUser from '@/middleware/attachReqUser';
 import validateRequest from '@/middleware/validateRequest';
 import { Router } from 'express';
 import * as CartsController from './carts.controller';
-import { addCartProductSchema, updateCartProductAmountSchema, removeCartProductSchema, clearCartSchema } from './carts.schemas';
-import attachReqUser from '@/middleware/attachReqUser';
+import { addCartProductSchema, clearCartSchema, removeCartProductSchema, updateCartProductAmountSchema } from './carts.schemas';
 
 const router = Router();
 

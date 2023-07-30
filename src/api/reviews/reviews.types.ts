@@ -1,6 +1,6 @@
 import MessageResponse from '@/types/MessageResponse';
 import { WithId } from 'mongodb';
-import { Product } from '../products/products.model';
+import { Product } from '@/api/products/products.model';
 import { Review } from './reviews.model';
 
 export interface InsertReviewArgs {

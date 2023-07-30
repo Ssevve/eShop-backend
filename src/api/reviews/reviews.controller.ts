@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import * as ProductsService from '../products/products.service';
+import * as ProductsService from '@/api/products/products.service';
 import { Review } from './reviews.model';
 import * as ReviewsService from './reviews.service';
 import { CreateReviewReqBody, CreateReviewResBody, EditReviewReqBody, EditReviewReqParams, EditReviewResBody, GetReviewsByProductIdReqParams, GetReviewsByUserIdReqParams } from './reviews.types';

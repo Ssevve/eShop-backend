@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
-import cartAggregationPipeline from './cartAggregationPipeline';
 import { Carts } from '../carts.model';
 import { ResponseCart } from '../carts.types';
+import cartAggregationPipeline from './cartAggregationPipeline';
 
 const aggregateWithCartId = async (cartId: string) => {
   const aggregationResult = await Carts.aggregate<ResponseCart>([
