@@ -49,11 +49,12 @@ export const getCart = async (req: Request<{}, {}, {}, {}>, res: Response<WithId
 };
 
 export const addCartProduct = async (req: Request<AddCartProductParams, {}, AddCartProductReqBody, {}>, res: Response<CartResBody>, next: NextFunction) => {
-  const cart = await CartsService.findSingleByUserId(req.user._id);
+  const { cartId } = req.params;
+  const cart = await CartsService.findSingleById(cartId);
   if (!cart) return res.status(404).json({ message: 'Cart not found.' });
 
-  const { cartId } = req.params;
-  if (cart._id.toString() !== cartId) return res.status(401).json({ message: 'You can not edit this cart!' });
+  const userId = req.user?._id;
+  if (cart.userId?.toString() !== userId) return res.status(401).json({ message: 'You can not edit this cart!' });
 
   try {
     const { productId, amount } = req.body;
