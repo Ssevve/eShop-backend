@@ -3,8 +3,7 @@ import { invalidProductIdMessage, requiredProductIdMessage } from '@/lib/errorMe
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
 
-const ratingConstraintsErrorMessage = `Rating needs to be between ${productConstraints.rating.min} and ${productConstraints.rating.max}`;
-const invalidReviewIdMessage = 'Invalid review ID.';
+const invalidRatingErrorMessage = 'Invalid rating value.';
 const requiredRatingMessage = 'Rating is required.';
 
 export const createReviewSchema = z.object({
@@ -13,8 +12,8 @@ export const createReviewSchema = z.object({
       .number({
         required_error: requiredRatingMessage,
       })
-      .min(productConstraints.rating.min, ratingConstraintsErrorMessage)
-      .max(productConstraints.rating.max, ratingConstraintsErrorMessage),
+      .min(productConstraints.rating.min, invalidRatingErrorMessage)
+      .max(productConstraints.rating.max, invalidRatingErrorMessage),
     productId: z
       .string({
         required_error: requiredProductIdMessage,
@@ -29,17 +28,15 @@ export const editReviewSchema = z.object({
       .number({
         required_error: requiredRatingMessage,
       })
-      .min(productConstraints.rating.min, ratingConstraintsErrorMessage)
-      .max(productConstraints.rating.max, ratingConstraintsErrorMessage),
+      .min(productConstraints.rating.min, invalidRatingErrorMessage)
+      .max(productConstraints.rating.max, invalidRatingErrorMessage),
   }),
   params: z.object({
     reviewId: z
       .string()
-      .min(24, invalidReviewIdMessage)
-      .max(24, invalidReviewIdMessage),
+      .refine((val) => ObjectId.isValid(val), { message: 'Invalid review ID.' }),
     productId: z
       .string()
-      .min(24, invalidProductIdMessage)
-      .max(24, invalidProductIdMessage),
+      .refine((val) => ObjectId.isValid(val), { message: invalidProductIdMessage }),
   }),  
 });
