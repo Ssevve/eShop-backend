@@ -1,19 +1,48 @@
 import { NextFunction, Request, Response } from 'express';
-import { Document } from 'mongodb';
+import { WithId } from 'mongodb';
+import { Cart } from './carts.model';
 import * as CartsService from './carts.service';
 import { AddCartProductParams, AddCartProductReqBody, CartResBody, UpdateCartProductAmountParams, UpdateCartProductAmountReqBody } from './carts.types';
 
-export const getCartByUserId = async (req: Request<{}, {}, {}, {}>, res: Response<Document>, next: NextFunction) => {
+export const getCart = async (req: Request<{}, {}, {}, {}>, res: Response<WithId<Cart>>, next: NextFunction) => {
   try {
-    const cart = await CartsService.findSingleByUserId(req.user._id);
+    if (req.user) {
+    // Registered user
+      const userCart = await CartsService.findSingleByUserId(req.user._id);
+      if (userCart) return res.status(200).json(userCart);
 
-    if (!cart) {
+      // User has no cart in the DB, get cart from a cookie
+      const cartIdFromCookie = req.cookies.cartId;
+      if (cartIdFromCookie) {
+        const cartFromCookie = await CartsService.findSingleById(cartIdFromCookie);
+        if (cartFromCookie && !cartFromCookie.userId) {
+          // Add user ID to the cart if it is not associated with any user
+          const updatedCartFromCookie = await CartsService.updateUserId(cartFromCookie._id, req.user._id);
+          if (!updatedCartFromCookie) throw Error('Could not update the cart.');
+          res.cookie('cartId', updatedCartFromCookie._id);
+          return res.status(201).json(updatedCartFromCookie);
+        }
+      }
+
       const newCart = await CartsService.createSingle(req.user._id);
       if (!newCart) throw Error('Could not create cart.');
-      return res.status(200).json(newCart);
+      res.cookie('cartId', newCart._id);
+      return res.status(201).json(newCart);
     }
-    
-    res.status(200).json(cart);
+
+    // Non registered user
+    const cookieCartId = req.cookies.cartId;
+    if (cookieCartId) {
+    // Get the cart id from cookie and find the cart
+      const cartFromCookie = await CartsService.findSingleById(cookieCartId);
+      if (cartFromCookie && !cartFromCookie.userId) return res.status(200).json(cartFromCookie);
+    }
+
+    const newCart = await CartsService.createSingle();
+    if (!newCart) throw Error('Could not create cart.');
+    res.cookie('cartId', newCart._id);
+
+    return res.status(200).json(newCart);
   } catch (error) {
     next(error);
   }

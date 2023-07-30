@@ -1,5 +1,5 @@
 import cartAggregationPipeline from './aggregations/cartAggregationPipeline';
-import { Carts } from './carts.model';
+import { Cart, Carts } from './carts.model';
 import { RemoveAllProductsParams,
   RemoveSingleProductParams,
   UpdateSingleProductAmountParams,
@@ -7,10 +7,14 @@ import { RemoveAllProductsParams,
 } from './carts.types';
 import { productConstraints } from '@/lib/constants';
 import aggregateWithCartId from './aggregations/aggregateWithCartId';
-import { ObjectId } from 'mongodb';
+import { ObjectId, WithId } from 'mongodb';
 
-const findSingleByUserId = async (userId: ObjectId) => {
-  const cartAggregationResults = await Carts.aggregate([
+export const findSingleById = async (cartId: string | ObjectId) => {
+  return aggregateWithCartId(cartId);
+};
+
+export const findSingleByUserId = async (userId: string | ObjectId) => {
+  const cartAggregationResults = await Carts.aggregate<WithId<Cart>>([
     {
       $match: {
         userId: new ObjectId(userId),
@@ -22,9 +26,9 @@ const findSingleByUserId = async (userId: ObjectId) => {
   return cartAggregationResults[0];
 };
 
-const createSingle = async (userId: string) => {
+export const createSingle = async (userId?: string) => {
   const insertResult = await Carts.insertOne({
-    userId: new ObjectId(userId),
+    userId: userId ? new ObjectId(userId) : null,
     products: [],
     createdAt: new Date(),
   });
@@ -33,7 +37,20 @@ const createSingle = async (userId: string) => {
   return cart;
 };
 
-const addSingleProduct = async ({ cartId, productId, amount }: AddSingleProductParams) => {
+export const updateUserId = async (cartId: ObjectId, userId: string) => {
+  const updateResult = await Carts.updateOne({ _id: cartId },
+    { 
+      $set:
+      { 
+        'userId': new ObjectId(userId),
+        'updatedAt': new Date(),
+      },
+    });
+  if (!updateResult.modifiedCount) throw Error('Failed to update the cart.');
+  return aggregateWithCartId(cartId);
+};
+
+export const addSingleProduct = async ({ cartId, productId, amount }: AddSingleProductParams) => {
   const cartObjectId = new ObjectId(cartId);
   const cart = await Carts.findOne(cartObjectId);
   if (!cart) throw ReferenceError('Cart not found.');
@@ -69,7 +86,7 @@ const addSingleProduct = async ({ cartId, productId, amount }: AddSingleProductP
   return aggregateWithCartId(cartId);
 };
 
-const updateSingleProductAmount = async ({ cartId, productId, amount }: UpdateSingleProductAmountParams) => {
+export const updateSingleProductAmount = async ({ cartId, productId, amount }: UpdateSingleProductAmountParams) => {
   const cartObjectId = new ObjectId(cartId);
   const cart = await Carts.findOne(cartObjectId);
   if (!cart) throw ReferenceError('Cart not found.');
@@ -90,7 +107,7 @@ const updateSingleProductAmount = async ({ cartId, productId, amount }: UpdateSi
   return aggregateWithCartId(cartId);
 };
 
-const removeSingleProduct = async ({ cartId, productId }: RemoveSingleProductParams) => {
+export const removeSingleProduct = async ({ cartId, productId }: RemoveSingleProductParams) => {
   const cartObjectId = new ObjectId(cartId);
   const cart = await Carts.findOne(cartObjectId);
   const updateResult = await Carts.updateOne({ _id: cartObjectId },
@@ -105,7 +122,7 @@ const removeSingleProduct = async ({ cartId, productId }: RemoveSingleProductPar
   return aggregateWithCartId(cartId);
 };
 
-const removeAllProducts = async ({ cartId }: RemoveAllProductsParams) => {
+export const removeAllProducts = async ({ cartId }: RemoveAllProductsParams) => {
   const cartObjectId = new ObjectId(cartId);
   const updateResult = await Carts.updateOne({ _id: cartObjectId },
     { 
@@ -120,7 +137,7 @@ const removeAllProducts = async ({ cartId }: RemoveAllProductsParams) => {
   return cart;
 };
 
-export { createSingle, findSingleByUserId, addSingleProduct, updateSingleProductAmount, removeSingleProduct, removeAllProducts };
+// export { createSingle, findSingleByUserId, addSingleProduct, updateSingleProductAmount, removeSingleProduct, removeAllProducts };
 
 
 

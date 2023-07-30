@@ -8,7 +8,7 @@ const CartProduct = z.object({
 });
 
 const Cart = z.object({
-  userId: z.instanceof(ObjectId),
+  userId: z.instanceof(ObjectId).nullable(),
   products: z.array(CartProduct),
   createdAt: z.date(),
   updatedAt: z.date().optional(),
