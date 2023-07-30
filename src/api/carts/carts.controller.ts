@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import * as CartsService from './carts.service';
-import { AddCartProductParams, AddCartProductReqBody, CartResBody, UpdateCartProductAmountParams, UpdateCartProductAmountReqBody } from './carts.types';
+import { AddCartProductParams, AddCartProductReqBody, CartResBody, RemoveAllProductsParams, RemoveSingleProductParams, UpdateCartProductAmountParams, UpdateCartProductAmountReqBody } from './carts.types';
 
 export const getCart = async (req: Request<{}, {}, {}, {}>, res: Response<CartResBody>, next: NextFunction) => {
   try {
@@ -83,7 +83,7 @@ export const updateCartProductAmount = async (req: Request<UpdateCartProductAmou
   }
 };
 
-export const removeCartProduct = async (req: Request<UpdateCartProductAmountParams, {}, {}, {}>, res: Response<CartResBody>, next: NextFunction) => {
+export const removeCartProduct = async (req: Request<RemoveSingleProductParams, {}, {}, {}>, res: Response<CartResBody>, next: NextFunction) => {
   const { cartId, productId } = req.params;
   const cart = await CartsService.findSingleById(cartId);
   if (!cart) return res.status(404).json({ message: 'Cart not found.' });
@@ -100,4 +100,21 @@ export const removeCartProduct = async (req: Request<UpdateCartProductAmountPara
     next(error);
   }
 };
-export const clearCart = () => {};
+
+export const clearCart = async (req: Request<RemoveAllProductsParams, {}, {}, {}>, res: Response<CartResBody>, next: NextFunction) => {
+  const { cartId } = req.params;
+  const cart = await CartsService.findSingleById(cartId);
+  if (!cart) return res.status(404).json({ message: 'Cart not found.' });
+
+  const userId = req.user?._id?.toString();
+  if (cart.userId?.toString() !== userId) return res.status(401).json({ message: 'You cannot edit this cart!' });
+
+  try {
+    const updatedCart = await CartsService.removeAllProducts({ cartId });
+    res.status(200).json(updatedCart);
+  } catch (error) {
+    if (error instanceof RangeError) return res.status(400).json({ message: error.message });
+    if (error instanceof ReferenceError) return res.status(404).json({ message: error.message });
+    next(error);
+  }
+};

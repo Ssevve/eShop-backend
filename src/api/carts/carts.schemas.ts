@@ -57,3 +57,11 @@ export const removeCartProductSchema = z.object({
       .refine((val) => ObjectId.isValid(val), { message: invalidProductIdMessage }),
   }),
 });
+
+export const clearCartSchema = z.object({
+  params: z.object({
+    cartId: z
+      .string()
+      .refine((val) => ObjectId.isValid(val), { message: invalidCartIdErrorMessage }),
+  }),
+});

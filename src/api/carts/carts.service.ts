@@ -135,6 +135,5 @@ export const removeAllProducts = async ({ cartId }: RemoveAllProductsParams) => 
       },
     });
   if (!updateResult.modifiedCount) throw Error('Failed to update the cart.');
-  const cart = await Carts.findOne(cartObjectId);
-  return cart;
+  return aggregateWithCartId(cartId);
 };

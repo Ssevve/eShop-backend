@@ -52,11 +52,11 @@ export interface AddSingleProductParams {
   amount: number;
 }
 
-export interface RemoveSingleProductParams {
+export type RemoveSingleProductParams = {
   cartId: string;
   productId: string;
-}
+};
 
-export interface RemoveAllProductsParams {
+export type RemoveAllProductsParams = {
   cartId: string;
-}
+};
