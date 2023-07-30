@@ -1,9 +1,10 @@
-import { ObjectId, WithId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import cartAggregationPipeline from './cartAggregationPipeline';
-import { Cart, Carts } from '../carts.model';
+import { Carts } from '../carts.model';
+import { ResponseCart } from '../carts.types';
 
-const aggregateWithCartId = async (cartId: string | ObjectId) => {
-  const aggregationResult = await Carts.aggregate<WithId<Cart>>([
+const aggregateWithCartId = async (cartId: string) => {
+  const aggregationResult = await Carts.aggregate<ResponseCart>([
     {
       $match: {
         '_id': new ObjectId(cartId),
