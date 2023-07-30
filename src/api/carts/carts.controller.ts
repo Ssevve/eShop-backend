@@ -53,8 +53,8 @@ export const addCartProduct = async (req: Request<AddCartProductParams, {}, AddC
   const cart = await CartsService.findSingleById(cartId);
   if (!cart) return res.status(404).json({ message: 'Cart not found.' });
 
-  const userId = req.user?._id;
-  if (cart.userId?.toString() !== userId) return res.status(401).json({ message: 'You can not edit this cart!' });
+  const userId = req.user?._id?.toString();
+  if (cart.userId?.toString() !== userId) return res.status(401).json({ message: 'You cannot edit this cart!' });
 
   try {
     const { productId, amount } = req.body;
@@ -68,11 +68,14 @@ export const addCartProduct = async (req: Request<AddCartProductParams, {}, AddC
 };
 
 export const updateCartProductAmount = async (req: Request<UpdateCartProductAmountParams, {}, UpdateCartProductAmountReqBody, {}>, res: Response<CartResBody>, next: NextFunction) => {
-  const cart = await CartsService.findSingleByUserId(req.user._id);
+  const { cartId, productId } = req.params;
+  const cart = await CartsService.findSingleById(cartId);
   if (!cart) return res.status(404).json({ message: 'Cart not found.' });
 
+  const userId = req.user?._id?.toString();
+  if (cart.userId?.toString() !== userId) return res.status(401).json({ message: 'You cannot edit this cart!' });
+
   try {
-    const { cartId, productId } = req.params;
     const updatedCart = await CartsService.updateSingleProductAmount({ cartId, productId, amount: req.body.amount });
     res.status(200).json(updatedCart);
   } catch (error) {
