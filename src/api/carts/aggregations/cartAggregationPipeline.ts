@@ -65,6 +65,18 @@ const cartAggregationPipeline =
           },
         },
       },
+      'cartDetails.totalProductAmount': {
+        $reduce: {
+          input: '$products',
+          initialValue: 0,
+          in: {
+            $add: [
+              '$$value',
+              { $ifNull: ['$$this.amount', 0] },
+            ],
+          },
+        },
+      },
     },
   },
   {
