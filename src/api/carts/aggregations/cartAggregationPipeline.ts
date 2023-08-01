@@ -77,6 +77,132 @@ const cartAggregationPipeline =
           },
         },
       },
+      'cartDetails.originalPrice': {
+        $reduce: {
+          input: '$products',
+          initialValue: 0,
+          in: {
+            $round: [
+              {
+                $add: [
+                  '$$value',
+                  {
+                    $ifNull: [
+                      {
+                        $multiply: [
+                          {
+                            $ifNull: [
+                              '$$this.product.price',
+                              0,
+                            ],
+                          },
+                          '$$this.amount',
+                        ],
+                      },
+                      0,
+                    ],
+                  },
+                ],
+              },
+              2,
+            ],
+          },
+        },
+      },
+      'cartDetails.totalDiscount': {
+        $reduce: {
+          input: '$products',
+          initialValue: 0,
+          in: {
+            $add: [
+              '$$value',
+              {
+                $round: [
+                  {
+                    $subtract: [
+                      {
+                        $add: [
+                          0,
+                          {
+                            $ifNull: [
+                              {
+                                $multiply: [
+                                  {
+                                    $ifNull: [
+                                      '$$this.product.price',
+                                      0,
+                                    ],
+                                  },
+                                  '$$this.amount',
+                                ],
+                              },
+                              0,
+                            ],
+                          },
+                        ],
+                      },
+                      {
+                        $add: [
+                          0,
+                          {
+                            $ifNull: [
+                              {
+                                $multiply: [
+                                  {
+                                    $ifNull: [
+                                      '$$this.product.discountPrice',
+                                      0,
+                                    ],
+                                  },
+                                  '$$this.amount',
+                                ],
+                              },
+                              0,
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  2,
+                ],
+              },
+            ],
+          },
+        },
+      },
+      'cartDetails.finalPrice': {
+        $reduce: {
+          input: '$products',
+          initialValue: 0,
+          in: {
+            $round: [
+              {
+                $add: [
+                  '$$value',
+                  {
+                    $ifNull: [
+                      {
+                        $multiply: [
+                          {
+                            $ifNull: [
+                              '$$this.product.discountPrice',
+                              0,
+                            ],
+                          },
+                          '$$this.amount',
+                        ],
+                      },
+                      0,
+                    ],
+                  },
+                ],
+              },
+              2,
+            ],
+          },
+        },
+      },
     },
   },
   {
