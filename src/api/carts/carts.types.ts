@@ -37,6 +37,9 @@ export type ResponseCart = {
   createdAt: Date;
   updatedAt?: Date;
   totalProductAmount: number;
+  originalPrice: number;
+  totalDiscount: number;
+  finalPrice: number;
 };
 
 export type CartResBody = ResponseCart | MessageResponse;
