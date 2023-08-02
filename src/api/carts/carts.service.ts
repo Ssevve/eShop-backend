@@ -66,10 +66,8 @@ export const addSingleProduct = async ({ cartId, productId, amount }: AddSingleP
   const duplicate = cart.products.find((product) => product.productId.toString() === productId);
   if (duplicate) {
     const newAmount = amount += duplicate.amount;
-    if (newAmount < productConstraints.amount.min 
-      || newAmount > productConstraints.amount.max) {
-      throw RangeError('Invalid amount.');
-    }
+    if (newAmount < productConstraints.amount.min) throw RangeError('Invalid amount.');
+    else if (newAmount > productConstraints.amount.max) throw RangeError(`Maximum amount is ${productConstraints.amount.max}!`);
     newProduct.amount = newAmount;
   }
 
