@@ -6,7 +6,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "lint": "eslint --fix src test",
     "test": "jest",
     "vercel-build": "echo hello"

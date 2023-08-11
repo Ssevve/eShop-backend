@@ -15,10 +15,13 @@ const app = express();
 
 app.use(morgan('dev'));
 app.use(helmet());
-  
+
 app.use(cors({
   credentials: true,
-  origin: process.env.CORS_ORIGIN,
+  origin: [
+    'http://localhost:5173',
+    'https://eshop-react-app.surge.sh',
+  ],
 }));
 
 app.use(express.json());

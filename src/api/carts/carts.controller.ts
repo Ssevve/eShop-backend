@@ -17,14 +17,14 @@ export const getCart = async (req: Request<{}, {}, {}, {}>, res: Response<CartRe
           // Add user ID to the cart if it is not associated with any user
           const updatedCartFromCookie = await CartsService.updateUserId(cartFromCookie._id.toString(), req.user._id);
           if (!updatedCartFromCookie) throw Error('Could not update the cart.');
-          res.cookie('cartId', updatedCartFromCookie._id);
+          res.cookie('cartId', updatedCartFromCookie._id, { sameSite: 'none', secure: true  });
           return res.status(201).json(updatedCartFromCookie);
         }
       }
 
       const newCart = await CartsService.createSingle(req.user._id);
       if (!newCart) throw Error('Could not create cart.');
-      res.cookie('cartId', newCart._id);
+      res.cookie('cartId', newCart._id, { sameSite: 'none', secure: true  });
       return res.status(201).json(newCart);
     }
 
@@ -38,7 +38,7 @@ export const getCart = async (req: Request<{}, {}, {}, {}>, res: Response<CartRe
 
     const newCart = await CartsService.createSingle();
     if (!newCart) throw Error('Could not create cart.');
-    res.cookie('cartId', newCart._id);
+    res.cookie('cartId', newCart._id, { sameSite: 'none', secure: true  });
 
     return res.status(200).json(newCart);
   } catch (error) {
