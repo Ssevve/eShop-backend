@@ -1,7 +1,7 @@
 import { productConstraints } from '@/lib/constants';
 import { ObjectId } from 'mongodb';
-import aggregateWithCartId from './aggregations/aggregateWithCartId';
-import cartAggregationPipeline from './aggregations/cartAggregationPipeline';
+import aggregateWithCartId from './aggregates/aggregateWithCartId';
+import cartAggregatePipeline from './aggregates/cartAggregatePipeline';
 import { Carts } from './carts.model';
 import {
   AddSingleProductParams,
@@ -16,16 +16,16 @@ export const findSingleById = async (cartId: string) => {
 };
 
 export const findSingleByUserId = async (userId: string | ObjectId) => {
-  const cartAggregationResults = await Carts.aggregate<ResponseCart>([
+  const cartAggregateResults = await Carts.aggregate<ResponseCart>([
     {
       $match: {
         userId: new ObjectId(userId),
       },
     },
-    ...cartAggregationPipeline,
+    ...cartAggregatePipeline,
   ]).toArray();
 
-  return cartAggregationResults[0];
+  return cartAggregateResults[0];
 };
 
 export const createSingle = async (userId?: string) => {
