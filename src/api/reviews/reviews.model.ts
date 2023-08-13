@@ -8,6 +8,8 @@ const Review = z.object({
   userId: z.instanceof(ObjectId),
   message: z.string(),
   rating: z.number(),
+  createdAt: z.date(),
+  updatedAt: z.date().optional(),
 });
 
 export type Review = z.infer<typeof Review>;

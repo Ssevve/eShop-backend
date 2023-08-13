@@ -35,6 +35,7 @@ const createSingle = async ({ rating, message, productId, userId, userFirstName 
       productId: new ObjectId(productId),
       userId: new ObjectId(userId),
       userFirstName: userFirstName,
+      createdAt: new Date(),
     },
     { session });
     if (!insertReviewResult.insertedId) {
@@ -61,7 +62,7 @@ const updateSingle = async ({ id, rating, message, productId }: UpdateReviewById
 
   let updateResults;
   await session.withTransaction(async () => {
-    const updateReviewResult = await Reviews.updateOne({ _id: new ObjectId(id) }, { $set: { rating, message } }, { session });
+    const updateReviewResult = await Reviews.updateOne({ _id: new ObjectId(id) }, { $set: { rating, message, updatedAt: new Date() } }, { session });
     if (updateReviewResult.modifiedCount !== 1) {
       session.abortTransaction();
       return;
