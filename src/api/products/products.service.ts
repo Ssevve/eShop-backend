@@ -9,6 +9,15 @@ const findSingleById = async (id: string, session?: ClientSession) => {
   return product;
 };
 
+const findMultipleById = async (ids: string[]) => {
+  const objectIds: ObjectId[] = [];
+  ids.forEach((id) => {
+    if (ObjectId.isValid(id)) objectIds.push(new ObjectId(id));
+  });
+  const products = await Products.find({ _id: { $in: objectIds } });
+  return products;
+};
+
 const findAllDiscounted = async ({ sort, order, skip, limit }: QueryArguments) => {
   // $where is not available in free atlas tier...
   const products = await Products
@@ -78,5 +87,5 @@ const updateRating = async ({ productId, session }: UpdateRatingArgs) => {
   return updatedProduct;
 };
 
-export { findAll, findAllByCategory, findAllDiscounted, findSingleById, updateRating };
+export { findAll, findMultipleById, findAllByCategory, findAllDiscounted, findSingleById, updateRating };
 

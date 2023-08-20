@@ -13,6 +13,7 @@ declare global {
       FIREBASE_TOKEN_URI: string;
       FIREBASE_AUTH_CERT_URL: string;
       FIREBASE_CLIENT_CERT_URL: string;
+      STRIPE_PRIVATE_KEY: string;
     }
   }
 }
