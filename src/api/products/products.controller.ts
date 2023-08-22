@@ -18,7 +18,7 @@ const getProductById = async (req: Request<GetProductByIdReqParams, {}, {}, {}>,
 const getProducts = async (req: Request<{}, {}, {}, GetProductsReqQuery>, res: Response<GetProductsResBody>, next: NextFunction) => {
 
   const DEFAULT_SORT = '_id';
-  const possibleSorts = ['name', 'discountPrice'];
+  const possibleSorts = ['name', 'discountPrice', 'rating', 'ratingsCount'];
   
   const DEFAULT_ORDER = 1;
   const possibleOrders: Orders = {
